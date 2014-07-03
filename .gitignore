@@ -1,0 +1,4 @@
+build-tmp
+debian/libapache2-mod-fastcgi.debhelper.log
+debian/libapache2-mod-fastcgi.substvars
+debian/libapache2-mod-fastcgi

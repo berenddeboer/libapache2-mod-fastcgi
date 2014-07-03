@@ -1,3 +1,9 @@
+libapache-mod-fastcgi (2.4.7~0910052141-1local1) precise; urgency=low
+
+  * libapache2-mod-fastcgi with AWS ELB support
+
+ -- root <root@2ad37cfced0a>  Thu, 03 Jul 2014 02:30:10 +0000
+
 libapache-mod-fastcgi (2.4.7~0910052141-1) unstable; urgency=low
 
   * New upstream release
