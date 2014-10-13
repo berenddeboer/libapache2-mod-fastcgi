@@ -12,6 +12,7 @@ How to build
 ============
 
 # Make sure multiverse is enabled in /etc/apt/sources.list.
+# Make sure you have deb-src lines in /etc/apt/sources.list.
 # Install build tools
     sudo apt-get install devscripts
 # Install package build dependencies:
