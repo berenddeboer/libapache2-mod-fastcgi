@@ -2,3 +2,4 @@
 #apache2.2-authn.dpatch # fixed
 #apache2.2-compat.dpatch # fixed
 doc-misc-typo-fix.dpatch
+apache2.4-compat.dpatch

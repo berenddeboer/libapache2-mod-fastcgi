@@ -1,12 +1,13 @@
 #! /bin/sh
-# postinst script for libapache-mod-fastcgi
+# postrm script for libapache-mod-fastcgi
 #
 # see: dh_installdeb(1)
 
 set -e
 
 fcgid_not_enabled () {
-	! a2query -q -m fcgid
+	# no-op check in postrm
+	:
 }
 
 # dh_installdeb will replace this with shell code automatically

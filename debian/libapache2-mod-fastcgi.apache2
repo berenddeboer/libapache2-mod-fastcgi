@@ -1,0 +1,3 @@
+mod build-tmp/20/.libs/mod_fastcgi.so
+mod debian/fastcgi.load
+mod debian/fastcgi.conf

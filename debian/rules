@@ -25,14 +25,7 @@ build/libapache2-mod-fastcgi::
 	$(DEB_MAKE_INVOKE) -C $(DEB_BUILDDIR_$(cdbs_curpkg)) $(AP2_MAKE_DEFS) -f Makefile.AP2
 
 install/libapache2-mod-fastcgi::
-	mkdir -p $(DEB_DESTDIR_$(cdbs_curpkg))/usr/lib/apache2/modules
-	install -m 644 $(DEB_BUILDDIR_$(cdbs_curpkg))/.libs/mod_fastcgi.so \
-	  $(DEB_DESTDIR_$(cdbs_curpkg))/usr/lib/apache2/modules
-	mkdir -p $(DEB_DESTDIR_$(cdbs_curpkg))/etc/apache2/mods-available
-	install -m 644 debian/fastcgi.load \
-	  $(DEB_DESTDIR_$(cdbs_curpkg))/etc/apache2/mods-available
-	install -m 644 debian/fastcgi.conf2 \
-	  $(DEB_DESTDIR_$(cdbs_curpkg))/etc/apache2/mods-available/fastcgi.conf
+	dh_apache2 --conditional=fcgid_not_enabled
 	mkdir -p $(DEB_DESTDIR_$(cdbs_curpkg))/var/lib/apache2/fastcgi
 	chown www-data:www-data $(DEB_DESTDIR_$(cdbs_curpkg))/var/lib/apache2/fastcgi
 	chmod 755 $(DEB_DESTDIR_$(cdbs_curpkg))/var/lib/apache2/fastcgi
