@@ -19,10 +19,10 @@
 #include "unixd.h"
 #endif
 
-uid_t 
+uid_t
 fcgi_util_get_server_uid(const server_rec * const s)
 {
-#if defined(WIN32) 
+#if defined(WIN32)
     return (uid_t) 0;
 #elif defined(APACHE2)
     /* the main server's uid */
@@ -33,10 +33,10 @@ fcgi_util_get_server_uid(const server_rec * const s)
 #endif
 }
 
-uid_t 
+uid_t
 fcgi_util_get_server_gid(const server_rec * const s)
 {
-#if defined(WIN32) 
+#if defined(WIN32)
     return (uid_t) 0;
 #elif defined(APACHE2)
     /* the main server's gid */
@@ -46,7 +46,7 @@ fcgi_util_get_server_gid(const server_rec * const s)
     return s->server_gid;
 #endif
 }
- 
+
 /*******************************************************************************
  * Compute printable MD5 hash. Pool p is used for scratch as well as for
  * allocating the hash - use temp storage, and dup it if you need to keep it.
@@ -65,7 +65,7 @@ fcgi_util_socket_hash_filename(pool *p, const char *path,
 
 
  /*******************************************************************************
-  * Concat src1 and src2 using the approprate path seperator for the platform. 
+  * Concat src1 and src2 using the approprate path seperator for the platform.
   */
 static char * make_full_path(pool *a, const char *src1, const char *src2)
 {
@@ -106,7 +106,7 @@ static char * make_full_path(pool *a, const char *src1, const char *src2)
  * the dynamic directory.  Result is allocated in pool p.
  */
 const char *
-fcgi_util_socket_make_path_absolute(pool * const p, 
+fcgi_util_socket_make_path_absolute(pool * const p,
         const char *const file, const int dynamic)
 {
 #ifdef APACHE2
@@ -157,7 +157,7 @@ fcgi_util_socket_make_domain_addr(pool *p, struct sockaddr_un **socket_addr,
 /*******************************************************************************
  * Convert a hostname or IP address string to an in_addr struct.
  */
-static int 
+static int
 convert_string_to_in_addr(const char * const hostname, struct in_addr * const addr)
 {
     struct hostent *hp;
@@ -168,7 +168,7 @@ convert_string_to_in_addr(const char * const hostname, struct in_addr * const ad
 #if !defined(INADDR_NONE) && defined(APACHE2)
 #define INADDR_NONE APR_INADDR_NONE
 #endif
-    
+
     if (addr->s_addr == INADDR_NONE) {
         if ((hp = gethostbyname((char *)hostname)) == NULL)
             return -1;
@@ -178,7 +178,10 @@ convert_string_to_in_addr(const char * const hostname, struct in_addr * const ad
         while (hp->h_addr_list[count] != 0)
             count++;
 
-        return count;
+        if (count >= 1)
+          return 1;
+        else
+          return count;
     }
     return 1;
 }
@@ -219,19 +222,19 @@ fcgi_util_socket_make_inet_addr(pool *p, struct sockaddr_in **socket_addr,
  * Determine if a process with uid/gid can access a file with mode permissions.
  */
 const char *
-fcgi_util_check_access(pool *tp, 
-        const char * const path, const struct stat *statBuf, 
+fcgi_util_check_access(pool *tp,
+        const char * const path, const struct stat *statBuf,
         const int mode, const uid_t uid, const gid_t gid)
 {
     struct stat myStatBuf;
 
-    if (statBuf == NULL) {    
+    if (statBuf == NULL) {
         if (stat(path, &myStatBuf) < 0)
             return ap_psprintf(tp, "stat(%s) failed: %s", path, strerror(errno));
         statBuf = &myStatBuf;
     }
-    
-#ifndef WIN32    
+
+#ifndef WIN32
     /* If the uid owns the file, check the owner bits */
     if (uid == statBuf->st_uid) {
         if (mode & R_OK && !(statBuf->st_mode & S_IRUSR))
@@ -247,7 +250,7 @@ fcgi_util_check_access(pool *tp,
         return "read not allowed";
     if (mode & _S_IWRITE && !(statBuf->st_mode & _S_IWRITE))
         return "write not allowed";
-    
+
     /* I don't think this works on FAT, but since I don't know how to check..
      * if (mode & _S_IEXEC && !(statBuf->st_mode & _S_IEXEC))
      *     return "execute not allowed"; */
@@ -286,7 +289,7 @@ fcgi_util_check_access(pool *tp,
             }
         }
     }
-    
+
     /* That just leaves the other bits.. */
     if (mode & R_OK && !(statBuf->st_mode & S_IROTH))
         return "read not allowed";
@@ -345,13 +348,13 @@ fcgi_util_fs_get(const char *ePath, const char *user, const char *group)
 
     ap_cpystrn(path, ePath, FCGI_MAXPATH);
     ap_no2slash(path);
-    
+
     for (s = fcgi_servers; s != NULL; s = s->next) {
         if (strcmp(s->fs_path, path) == 0) {
             if (fcgi_wrapper == NULL)
                 return s;
 
-            if (strcmp(user, s->user) == 0 
+            if (strcmp(user, s->user) == 0
                 && (user[0] == '~' || strcmp(group, s->group) == 0))
             {
                 return s;
@@ -367,17 +370,17 @@ fcgi_util_fs_is_path_ok(pool * const p, const char * const fs_path, struct stat 
     const char *err;
 
     if (finfo == NULL) {
-        finfo = (struct stat *)ap_palloc(p, sizeof(struct stat));	        
+        finfo = (struct stat *)ap_palloc(p, sizeof(struct stat));
         if (stat(fs_path, finfo) < 0)
             return ap_psprintf(p, "stat(%s) failed: %s", fs_path, strerror(errno));
     }
-    
-    if (finfo->st_mode == 0) 
+
+    if (finfo->st_mode == 0)
         return ap_psprintf(p, "script not found or unable to stat()");
 
-    if (S_ISDIR(finfo->st_mode)) 
+    if (S_ISDIR(finfo->st_mode))
         return ap_psprintf(p, "script is a directory!");
-    
+
     /* Let the wrapper determine what it can and can't execute */
     if (! fcgi_wrapper)
     {
@@ -392,7 +395,7 @@ fcgi_util_fs_is_path_ok(pool * const p, const char * const fs_path, struct stat 
                 (long)fcgi_user_id, (long)fcgi_group_id, err);
         }
     }
-    
+
     return NULL;
 }
 
@@ -417,7 +420,7 @@ fcgi_util_fs_new(pool *p)
     s->directive = APP_CLASS_UNKNOWN;
     s->processPriority = FCGI_DEFAULT_PRIORITY;
     s->envp = &fcgi_empty_env;
-    
+
 #ifdef WIN32
     s->listenFd = (int) INVALID_HANDLE_VALUE;
 #else
@@ -430,7 +433,7 @@ fcgi_util_fs_new(pool *p)
 /*******************************************************************************
  * Add the server to the linked list of FastCGI servers.
  */
-void 
+void
 fcgi_util_fs_add(fcgi_server *s)
 {
     s->next = fcgi_servers;
@@ -501,7 +504,7 @@ fcgi_util_fs_create_procs(pool *p, int num)
     return proc;
 }
 
-int fcgi_util_ticks(struct timeval * tv) 
+int fcgi_util_ticks(struct timeval * tv)
 {
 #ifdef WIN32
     /* millisecs is sufficent granularity */
@@ -515,5 +518,3 @@ int fcgi_util_ticks(struct timeval * tv)
     return gettimeofday(tv, NULL);
 #endif
 }
-
-
