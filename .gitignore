@@ -1,12 +1,10 @@
 build-tmp
-debian/libapache2-mod-fastcgi.debhelper.log
-debian/libapache2-mod-fastcgi.substvars
 debian/libapache2-mod-fastcgi
+debian/libapache2-mod-fastcgi.*
+debian/xplainhosting-libapache2-mod-fastcgi.*
+debian/xplainhosting-libapache2-mod-fastcgi/*
 debian/compat
 debian/files
-debian/libapache2-mod-fastcgi.postinst.debhelper
-debian/libapache2-mod-fastcgi.postrm.debhelper
-debian/libapache2-mod-fastcgi.prerm.debhelper
 debian/patched/apache2.4-compat.dpatch
 debian/patched/doc-misc-typo-fix.dpatch
 debian/stamp-patched

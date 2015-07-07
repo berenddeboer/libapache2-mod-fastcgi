@@ -7,7 +7,7 @@ Build-Depends: debhelper (>> 5.0.0), cdbs, dh-apache2, apache2-dev (>= 2.2.4), d
 Uploaders: Taku YASUI <tach@debian.or.jp>
 Homepage: http://www.fastcgi.com/
 
-Package: libapache2-mod-fastcgi
+Package: xplainhosting-libapache2-mod-fastcgi
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Apache 2 FastCGI module for long-running CGI scripts
