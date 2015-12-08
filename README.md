@@ -1,5 +1,5 @@
-What is does
-============
+# What is does
+
 libapache2-mod-fastcgi has the annoying property to fail when AWS ELB
 CNAME returns multiple ip addresses instead of simply picking the
 first one.
@@ -8,14 +8,17 @@ The error message is something like:
 
   FastCgiExternalServer /usr/lib/cgi-bin/php5-fcgi: failed to resolve "internal-php-farm.ap-southeast-2.elb.amazonaws.com" to exactly one IP address
 
-How to build
-============
+This improved version simply picks the first ip address. Unfortunately
+it does not yet take TTL into account.
 
-# Make sure multiverse is enabled in /etc/apt/sources.list.
-# Make sure you have deb-src lines in /etc/apt/sources.list.
-# Install build tools
+
+# How to build
+
+1. Make sure multiverse is enabled in /etc/apt/sources.list.
+2. Make sure you have deb-src lines in /etc/apt/sources.list.
+3. Install build tools
     sudo apt-get install devscripts
-# Install package build dependencies:
+4. Install package build dependencies:
     sudo apt-get build-dep libapache2-mod-fastcgi
-# Build:
+5. Build:
     dpkg-buildpackage -rfakeroot -b
