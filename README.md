@@ -8,8 +8,8 @@ The error message is something like:
 
   FastCgiExternalServer /usr/lib/cgi-bin/php5-fcgi: failed to resolve "internal-php-farm.ap-southeast-2.elb.amazonaws.com" to exactly one IP address
 
-This improved version simply picks the first ip address. Unfortunately
-it does not yet take TTL into account.
+This improved version picks the first available ip address and sets a TTL
+of 60 seconds. Every 60 seconds the DNS is queried for a new ip address.
 
 
 # How to build
@@ -20,5 +20,6 @@ it does not yet take TTL into account.
     sudo apt-get install devscripts
 4. Install package build dependencies:
     sudo apt-get build-dep libapache2-mod-fastcgi
-5. Build:
+5. Make sure gcc 4.9 is installed and the default.
+6. Build:
     dpkg-buildpackage -rfakeroot -b

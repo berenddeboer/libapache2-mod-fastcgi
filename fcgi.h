@@ -49,7 +49,7 @@
 typedef struct apr_array_header_t array_header;
 typedef struct apr_table_t table;
 typedef struct apr_pool_t pool;
-#define NET_SIZE_T apr_socklen_t 
+#define NET_SIZE_T apr_socklen_t
 
 typedef apr_status_t apcb_t;
 #define APCB_OK APR_SUCCESS
@@ -117,7 +117,7 @@ typedef apr_status_t apcb_t;
 
 #include "http_conf_globals.h"
 typedef void apcb_t;
-#define APCB_OK 
+#define APCB_OK
 
 #if MODULE_MAGIC_NUMBER < 19990320
 #error "This version of mod_fastcgi is incompatible with Apache versions older than 1.3.6."
@@ -125,7 +125,7 @@ typedef void apcb_t;
 
 #endif /* !APACHE2 */
 
-#ifndef NO_WRITEV 
+#ifndef NO_WRITEV
 #include <sys/uio.h>
 #endif
 
@@ -136,6 +136,7 @@ typedef void apcb_t;
 #pragma warning(default : 4115)
 #else
 #include <sys/un.h>
+#include <stdatomic.h>
 #endif
 
 /* FastCGI header files */
@@ -170,7 +171,7 @@ typedef struct _fcgi_pm_job {
 } fcgi_pm_job;
 #endif
 
-enum process_state { 
+enum process_state {
     FCGI_RUNNING_STATE,             /* currently running */
     FCGI_START_STATE,               /* needs to be started by PM */
     FCGI_VICTIM_STATE,              /* SIGTERM was sent by PM */
@@ -223,6 +224,9 @@ typedef struct _FastCgiServerInfo {
     u_int numFailures;              /* num restarts due to exit failure */
     int bad;                        /* is [not] having start problems */
     struct sockaddr *socket_addr;   /* Socket Address of FCGI app server class */
+    int ttl;                        /* unix time ip address in socket_addr
+                                       expires, or 0 when it does not expire */
+    atomic_bool refreshing_socket_addr; /* set to 1 when socket_addr is being updated */
 #ifdef WIN32
     struct sockaddr *dest_addr;     /* for local apps on NT need socket address */
                                     /* bound to localhost */
@@ -438,9 +442,9 @@ typedef struct
 #endif /* !APACHE2 */
 
 #ifdef FCGI_DEBUG
-#define FCGIDBG1(a)              ap_log_error(FCGI_LOG_DEBUG,fcgi_apache_main_server,a);
-#define FCGIDBG2(a,b)            ap_log_error(FCGI_LOG_DEBUG,fcgi_apache_main_server,a,b);
-#define FCGIDBG3(a,b,c)          ap_log_error(FCGI_LOG_DEBUG,fcgi_apache_main_server,a,b,c);
+#define FCGIDBG1(a)              ap_log_error(FCGI_LOG_DEBUG_NOERRNO,fcgi_apache_main_server,a);
+#define FCGIDBG2(a,b)            ap_log_error(FCGI_LOG_DEBUG_NOERRNO,fcgi_apache_main_server,a,b);
+#define FCGIDBG3(a,b,c)          ap_log_error(FCGI_LOG_DEBUG_NOERRNO,fcgi_apache_main_server,a,b,c);
 #define FCGIDBG4(a,b,c,d)        ap_log_error(FCGI_LOG_DEBUG,fcgi_apache_main_server,a,b,c,d);
 #define FCGIDBG5(a,b,c,d,e)      ap_log_error(FCGI_LOG_DEBUG,fcgi_apache_main_server,a,b,c,d,e);
 #define FCGIDBG6(a,b,c,d,e,f)    ap_log_error(FCGI_LOG_DEBUG,fcgi_apache_main_server,a,b,c,d,e,f);
@@ -461,7 +465,7 @@ typedef struct
  */
 typedef struct {
     enum { PREP, HEADER, NAME, VALUE } pass;
-    char **envp; 
+    char **envp;
     int headerLen, nameLen, valueLen, totalLen;
     char *equalPtr;
     unsigned char headerBuff[8];
@@ -545,8 +549,9 @@ const char *fcgi_util_socket_make_path_absolute(pool * const p,
 const char *fcgi_util_socket_make_domain_addr(pool *p, struct sockaddr_un **socket_addr,
     int *socket_addr_len, const char *socket_path);
 #endif
+int convert_hostname_to_in_addr(const char * const hostname, struct in_addr * const addr, int *ttl);
 const char *fcgi_util_socket_make_inet_addr(pool *p, struct sockaddr_in **socket_addr,
-    int *socket_addr_len, const char *host, unsigned short port);
+    int *socket_addr_len, const char *host, unsigned short port, int *ttl);
 const char *fcgi_util_check_access(pool *tp,
     const char * const path, const struct stat *statBuf,
     const int mode, const uid_t uid, const gid_t gid);
@@ -629,4 +634,3 @@ extern int dynamicFlush;
 extern module MODULE_VAR_EXPORT fastcgi_module;
 
 #endif  /* FCGI_H */
-

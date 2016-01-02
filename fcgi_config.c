@@ -21,7 +21,7 @@
 
 #ifdef WIN32
 /* warning C4100: unreferenced formal parameter */
-/* warning C4706: assignment within conditional expression */ 
+/* warning C4706: assignment within conditional expression */
 #pragma warning( disable : 4100 4706 )
 #endif
 
@@ -77,7 +77,7 @@ static const char *get_u_short(pool *p, const char **arg,
     if (*ptr != '\0') {
         return ap_pstrcat(p, "\"", txt, "\" must be a positive integer", NULL);
 	}
-    
+
 	if (tmp < min || tmp > USHRT_MAX) {
         return ap_psprintf(p, "\"%u\" must be >= %u and < %u", *num, min, USHRT_MAX);
 	}
@@ -107,7 +107,7 @@ static const char *get_int(pool *p, const char **arg, int *num, int min)
     {
         return ap_psprintf(p, "\"%d\" must be >= %d", *num, min);
     }
-            
+
     return NULL;
 }
 
@@ -265,7 +265,7 @@ apcb_t fcgi_config_reset_globals(void* dummy)
     fcgi_config_set_fcgi_uid_n_gid(0);
     fcgi_wrapper = NULL;
     fcgi_socket_dir = NULL;
-    
+
     fcgi_dynamic_total_proc_count = 0;
     fcgi_dynamic_epoch = 0;
     fcgi_dynamic_last_analyzed = 0;
@@ -330,7 +330,7 @@ const char *fcgi_config_make_dir(pool *tp, char *path)
     if (stat(path, &finfo) != 0) {
         /* No, but maybe we can create it */
 #ifdef WIN32
-        if (mkdir(path) != 0) 
+        if (mkdir(path) != 0)
 #else
         if (mkdir(path, S_IRWXU) != 0)
 #endif
@@ -427,7 +427,7 @@ const char *fcgi_config_make_dynamic_dir(pool *p, const int wax)
 
         /* delete the contents */
 
-        while ((dirp = readdir(dp)) != NULL) 
+        while ((dirp = readdir(dp)) != NULL)
         {
             if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0)
                 continue;
@@ -520,7 +520,7 @@ const char *fcgi_config_set_socket_dir(cmd_parms *cmd, void *dummy, const char *
 const char *fcgi_config_set_wrapper(cmd_parms *cmd, void *dummy, const char *arg)
 {
 #ifdef WIN32
-    return ap_psprintf(cmd->temp_pool, 
+    return ap_psprintf(cmd->temp_pool,
         "the %s directive is not supported on WIN", cmd->cmd->name);
 #else
 
@@ -555,7 +555,7 @@ const char *fcgi_config_set_wrapper(cmd_parms *cmd, void *dummy, const char *arg
         return NULL;
     }
 
-    if (strcasecmp(arg, "On") == 0) 
+    if (strcasecmp(arg, "On") == 0)
     {
         wrapper = SUEXEC_BIN;
     }
@@ -572,7 +572,7 @@ const char *fcgi_config_set_wrapper(cmd_parms *cmd, void *dummy, const char *arg
     }
 
     err = fcgi_util_check_access(tp, wrapper, NULL, X_OK, fcgi_user_id, fcgi_group_id);
-    if (err) 
+    if (err)
     {
         return ap_psprintf(tp, "%s: \"%s\" execute access for server "
                            "(uid %ld, gid %ld) failed: %s", name, wrapper,
@@ -599,6 +599,8 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
     /* Allocate temp storage for the array of initial environment variables */
     char **envp = ap_pcalloc(tp, sizeof(char *) * (MAX_INIT_ENV_VARS + 3));
     unsigned int envc = 0;
+
+    int ttl; /* if domain name given instead of ip address, how many seconds is ip address valid */
 
 #ifdef WIN32
     HANDLE mutex;
@@ -663,14 +665,14 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
     fcgi_config_set_env_var(p, envp, &envc, "SystemRoot");
 
     mutex = CreateMutex(NULL, FALSE, fs_path);
-    
+
     if (mutex == NULL)
     {
         ap_log_error(FCGI_LOG_ALERT, fcgi_apache_main_server,
             "FastCGI: CreateMutex() failed");
         return "failed to create FastCGI application accept mutex";
     }
-    
+
     SetHandleInformation(mutex, HANDLE_FLAG_INHERIT, TRUE);
 
     s->mutex_env_string = ap_psprintf(p, "_FCGI_MUTEX_=%ld", mutex);
@@ -738,7 +740,7 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
         }
         else if (strcasecmp(option, "-user") == 0) {
 #ifdef WIN32
-            return ap_psprintf(tp, 
+            return ap_psprintf(tp,
                 "%s %s: the -user option isn't supported on WIN", name, fs_path);
 #else
             s->user = ap_getword_conf(tp, &arg);
@@ -748,7 +750,7 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
         }
         else if (strcasecmp(option, "-group") == 0) {
 #ifdef WIN32
-            return ap_psprintf(tp, 
+            return ap_psprintf(tp,
                 "%s %s: the -group option isn't supported on WIN", name, fs_path);
 #else
             s->group = ap_getword_conf(tp, &arg);
@@ -771,7 +773,7 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
 
         if (s->user == NULL)
         {
-            s->user = ap_psprintf(p, "#%ld", (long) fcgi_util_get_server_uid(cmd->server)); 
+            s->user = ap_psprintf(p, "#%ld", (long) fcgi_util_get_server_uid(cmd->server));
         }
 
         s->uid = ap_uname2id(s->user);
@@ -785,7 +787,7 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
 
     if ((err = fcgi_util_fs_set_uid_n_gid(p, s, s->uid, s->gid)))
     {
-        return ap_psprintf(tp, 
+        return ap_psprintf(tp,
             "%s %s: invalid user or group: %s", name, fs_path, err);
     }
 #endif /* !WIN32 */
@@ -806,12 +808,12 @@ const char *fcgi_config_new_static_server(cmd_parms *cmd, void *dummy, const cha
     /* Build the appropriate sockaddr structure */
     if (s->port != 0) {
         err = fcgi_util_socket_make_inet_addr(p, (struct sockaddr_in **)&s->socket_addr,
-                                &s->socket_addr_len, NULL, s->port);
+              &s->socket_addr_len, NULL, s->port, &ttl);
         if (err != NULL)
             return ap_psprintf(tp, "%s %s: %s", name, fs_path, err);
 #ifdef WIN32
         err = fcgi_util_socket_make_inet_addr(p, (struct sockaddr_in **)&s->dest_addr,
-                                          &s->socket_addr_len, "localhost", s->port);
+              &s->socket_addr_len, "localhost", s->port, &ttl);
         if (err != NULL)
             return ap_psprintf(tp, "%s %s: %s", name, fs_path, err);
 #endif
@@ -854,6 +856,8 @@ const char *fcgi_config_new_external_server(cmd_parms *cmd, void *dummy, const c
     char *fs_path = ap_getword_conf(p, &arg);
     const char *option, *err;
 
+    int ttl; /* if domain name given instead of ip address, how many seconds is ip address valid */
+
     err = ap_check_cmd_context(cmd, NOT_IN_LIMIT|NOT_IN_DIR_LOC_FILE);
     if (err) {
         return err;
@@ -886,7 +890,7 @@ const char *fcgi_config_new_external_server(cmd_parms *cmd, void *dummy, const c
                 name, fs_path, (long) fcgi_util_get_server_uid(cmd->server),
                 (long) fcgi_util_get_server_gid(cmd->server));
         }
-        else 
+        else
         {
             return ap_psprintf(tp,
                 "%s: redefinition of previously defined class \"%s\"", name, fs_path);
@@ -930,7 +934,7 @@ const char *fcgi_config_new_external_server(cmd_parms *cmd, void *dummy, const c
         }
         else if (strcasecmp(option, "-user") == 0) {
 #ifdef WIN32
-            return ap_psprintf(tp, 
+            return ap_psprintf(tp,
                 "%s %s: the -user option isn't supported on WIN", name, fs_path);
 #else
             s->user = ap_getword_conf(tp, &arg);
@@ -940,7 +944,7 @@ const char *fcgi_config_new_external_server(cmd_parms *cmd, void *dummy, const c
         }
         else if (strcasecmp(option, "-group") == 0) {
 #ifdef WIN32
-            return ap_psprintf(tp, 
+            return ap_psprintf(tp,
                 "%s %s: the -group option isn't supported on WIN", name, fs_path);
 #else
             s->group = ap_getword_conf(tp, &arg);
@@ -997,9 +1001,15 @@ const char *fcgi_config_new_external_server(cmd_parms *cmd, void *dummy, const c
     /* Build the appropriate sockaddr structure */
     if (s->port != 0) {
         err = fcgi_util_socket_make_inet_addr(p, (struct sockaddr_in **)&s->socket_addr,
-            &s->socket_addr_len, s->host, s->port);
+            &s->socket_addr_len, s->host, s->port, &ttl);
         if (err != NULL)
             return ap_psprintf(tp, "%s %s: %s", name, fs_path, err);
+        // If ttl set, assign a specific time s->socket_addr expires.
+        // Avoid thundering herd problem if we have lots of external
+        // server definitions by randomly adding between 0 and 30 seconds.
+        s->refreshing_socket_addr = 0;
+        if (ttl)
+            s->ttl = time(NULL) + ttl + (random() % 30);
     } else {
 
         if (fcgi_socket_dir == NULL)
@@ -1084,13 +1094,13 @@ const char *fcgi_config_set_config(cmd_parms *cmd, void *dummy, const char *arg)
                 return invalid_value(tp, name, NULL, option, err);
         }
         else if ((strcasecmp(option, "-singleThreshold") == 0)
-		    || (strcasecmp(option, "-singleThreshhold") == 0)) 
+		    || (strcasecmp(option, "-singleThreshhold") == 0))
         {
             if ((err = get_int(tp, &arg, &dynamicThreshold1, 0)))
                 return invalid_value(tp, name, NULL, option, err);
         }
         else if ((strcasecmp(option, "-multiThreshold") == 0)
-		    || (strcasecmp(option, "-multiThreshhold") == 0)) 
+		    || (strcasecmp(option, "-multiThreshhold") == 0))
         {
             if ((err = get_int(tp, &arg, &dynamicThresholdN, 0)))
                 return invalid_value(tp, name, NULL, option, err);
@@ -1151,12 +1161,12 @@ const char *fcgi_config_set_config(cmd_parms *cmd, void *dummy, const char *arg)
 
     if (dynamicProcessSlack >= dynamicMaxProcs + 1) {
 	    /* the kill policy would work unexpectedly */
-    	return ap_psprintf(tp, 
-            "%s: processSlack (%u) must be less than maxProcesses (%u) + 1", 
+    	return ap_psprintf(tp,
+            "%s: processSlack (%u) must be less than maxProcesses (%u) + 1",
         	name, dynamicProcessSlack, dynamicMaxProcs);
     }
 
-    /* Move env array to a surviving pool, leave 2 extra slots for 
+    /* Move env array to a surviving pool, leave 2 extra slots for
      * WIN32 _FCGI_MUTEX_ and _FCGI_SHUTDOWN_EVENT_ */
     dynamicEnvp = (char **)ap_pcalloc(p, sizeof(char *) * (envc + 4));
     memcpy(dynamicEnvp, envp, sizeof(char *) * envc);
@@ -1194,7 +1204,7 @@ const char *fcgi_config_new_auth_server(cmd_parms * cmd,
 
     /* Make sure its already configured or at least a candidate for dynamic */
     if (fcgi_util_fs_get_by_id(auth_server, fcgi_util_get_server_uid(cmd->server),
-                               fcgi_util_get_server_gid(cmd->server)) == NULL) 
+                               fcgi_util_get_server_gid(cmd->server)) == NULL)
     {
         const char *err = fcgi_util_fs_is_path_ok(tp, auth_server, NULL);
         if (err)

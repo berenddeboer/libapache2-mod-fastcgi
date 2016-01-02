@@ -155,10 +155,34 @@ fcgi_util_socket_make_domain_addr(pool *p, struct sockaddr_un **socket_addr,
 #endif
 
 /*******************************************************************************
+ * Convert a hostname to an in_addr struct.
+ */
+int
+convert_hostname_to_in_addr(const char * const hostname, struct in_addr * const addr, int *ttl)
+{
+    struct hostent *hp;
+    int count;
+
+    if ((hp = gethostbyname((char *)hostname)) == NULL)
+        return -1;
+
+    memcpy((char *) addr, hp->h_addr, hp->h_length);
+    count = 0;
+    while (hp->h_addr_list[count] != 0)
+        count++;
+
+    if (count == 0)
+        return 0;
+    *ttl = 60; /* Hard-coded 60 seconds to live, that's the AWS ELB value */
+    return 1;
+}
+
+
+/*******************************************************************************
  * Convert a hostname or IP address string to an in_addr struct.
  */
 static int
-convert_string_to_in_addr(const char * const hostname, struct in_addr * const addr)
+convert_string_to_in_addr(const char * const hostname, struct in_addr * const addr, int *ttl)
 {
     struct hostent *hp;
     int count;
@@ -170,18 +194,7 @@ convert_string_to_in_addr(const char * const hostname, struct in_addr * const ad
 #endif
 
     if (addr->s_addr == INADDR_NONE) {
-        if ((hp = gethostbyname((char *)hostname)) == NULL)
-            return -1;
-
-        memcpy((char *) addr, hp->h_addr, hp->h_length);
-        count = 0;
-        while (hp->h_addr_list[count] != 0)
-            count++;
-
-        if (count >= 1)
-          return 1;
-        else
-          return count;
+        return convert_hostname_to_in_addr(hostname, addr, ttl);
     }
     return 1;
 }
@@ -194,7 +207,8 @@ convert_string_to_in_addr(const char * const hostname, struct in_addr * const ad
  */
 const char *
 fcgi_util_socket_make_inet_addr(pool *p, struct sockaddr_in **socket_addr,
-        int *socket_addr_len, const char *host, unsigned short port)
+        int *socket_addr_len, const char *host, unsigned short port,
+        int *ttl)
 {
     if (*socket_addr == NULL)
         *socket_addr = ap_pcalloc(p, sizeof(struct sockaddr_in));
@@ -205,8 +219,9 @@ fcgi_util_socket_make_inet_addr(pool *p, struct sockaddr_in **socket_addr,
     (*socket_addr)->sin_port = htons(port);
 
     /* Get an in_addr represention of the host */
+    *ttl = 0;
     if (host != NULL) {
-        if (convert_string_to_in_addr(host, &(*socket_addr)->sin_addr) != 1) {
+      if (convert_string_to_in_addr(host, &(*socket_addr)->sin_addr, ttl) != 1) {
             return ap_pstrcat(p, "failed to resolve \"", host,
                            "\" to exactly one IP address", NULL);
         }
